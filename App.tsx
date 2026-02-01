@@ -21,6 +21,8 @@ const App: React.FC = () => {
   const [detailTaskFilter, setDetailTaskFilter] = useState<string>('all');
   
   const [showPwaTip, setShowPwaTip] = useState(false);
+  const [isIos, setIsIos] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
 
@@ -29,7 +31,6 @@ const App: React.FC = () => {
   const [taskTypes, setTaskTypes] = useState<TaskType[]>(DEFAULT_TASK_TYPES);
   const [users, setUsers] = useState<User[]>([]);
 
-  // 触感反馈函数
   const triggerHaptic = (style: 'light' | 'medium' | 'heavy' = 'light') => {
     if ('vibrate' in navigator) {
       const patterns = { light: 10, medium: 30, heavy: 60 };
@@ -38,6 +39,22 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
+    // 检测环境
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    const ios = /iphone|ipad|ipod/.test(userAgent);
+    const standalone = (window.navigator as any).standalone || window.matchMedia('(display-mode: standalone)').matches;
+    
+    setIsIos(ios);
+    setIsStandalone(standalone);
+
+    // 如果未安装，显示提示
+    if (!standalone) {
+      const hasShownTip = localStorage.getItem('pwa_tip_shown');
+      if (!hasShownTip) {
+        setTimeout(() => setShowPwaTip(true), 3000);
+      }
+    }
+
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
     window.addEventListener('online', handleOnline);
@@ -89,10 +106,12 @@ const App: React.FC = () => {
       if (outcome === 'accepted') {
         setDeferredPrompt(null);
         setShowPwaTip(false);
+        localStorage.setItem('pwa_tip_shown', 'true');
       }
-    } else {
-      alert('请点击浏览器底部的【分享】按钮，选择【添加到主屏幕】。');
+    } else if (isIos) {
+      alert('请点击浏览器底部的【分享】图标，然后选择【添加到主屏幕】。');
       setShowPwaTip(false);
+      localStorage.setItem('pwa_tip_shown', 'true');
     }
   };
 
@@ -178,7 +197,6 @@ const App: React.FC = () => {
 
   return (
     <div className="flex flex-col h-screen max-w-md mx-auto bg-[#fff8f5] relative overflow-hidden shadow-2xl font-sans">
-      {/* 离线通知栏 */}
       {!isOnline && (
         <div className="absolute top-[var(--safe-top)] left-0 right-0 bg-slate-800 text-white text-[10px] py-1 text-center z-[110] font-black tracking-widest animate-pulse">
           <i className="fa-solid fa-wifi-slash mr-2"></i> 离线模式：部分功能受限
@@ -189,17 +207,17 @@ const App: React.FC = () => {
       
       {renderContent()}
       
-      {showPwaTip && (
+      {showPwaTip && !isStandalone && (
         <div className="fixed bottom-24 left-4 right-4 z-[60] animate-in slide-in-from-bottom-10 duration-500">
           <div className="bg-orange-500 text-white p-4 rounded-2xl shadow-2xl flex items-center justify-between border-2 border-white">
             <div className="flex items-center gap-3" onClick={handleInstallClick}>
               <i className="fa-solid fa-cloud-arrow-down text-2xl animate-bounce"></i>
               <div>
-                <p className="text-sm font-black">安装“萌宠日记”到主屏幕</p>
-                <p className="text-[10px] opacity-90">体验更流畅，支持离线查看</p>
+                <p className="text-sm font-black">安装“萌宠日记”到桌面</p>
+                <p className="text-[10px] opacity-90">{isIos ? '点击分享选择“添加到主屏幕”' : '享受全屏、离线使用的完整体验'}</p>
               </div>
             </div>
-            <button onClick={() => { triggerHaptic('light'); setShowPwaTip(false); }} className="bg-white/20 p-2 rounded-full h-8 w-8 flex items-center justify-center">
+            <button onClick={() => { triggerHaptic('light'); setShowPwaTip(false); localStorage.setItem('pwa_tip_shown', 'true'); }} className="bg-white/20 p-2 rounded-full h-8 w-8 flex items-center justify-center ml-2">
               <i className="fa-solid fa-xmark text-xs"></i>
             </button>
           </div>
