@@ -1,0 +1,7 @@
+{
+  "name": "萌宠日记 - PetCare PWA",
+  "description": "一站式宠物健康与生活记录专家，支持体重记录、提醒事项、驱虫洗澡预约及健康曲线追踪。",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
