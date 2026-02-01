@@ -4,6 +4,8 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
+  // 这里的 base 必须对应你的 GitHub 仓库名
+  base: '/petcare-pwa/',
   plugins: [
     react(),
     VitePWA({
