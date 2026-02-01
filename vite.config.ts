@@ -1,10 +1,9 @@
-
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
-  base: '/petcare-pwa/', // 确保资源路径与 GitHub 仓库名匹配
+  base: '/petcare-pwa/', 
   plugins: [
     react(),
     VitePWA({
@@ -14,9 +13,8 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
         cleanupOutdatedCaches: true,
-        // 关键：确保在 Safari 上不因缓存策略导致无法连接
         clientsClaim: true,
-        skipWaiting: true
+        skipWaiting: true,
       },
       manifest: {
         name: '萌宠日记 - 宠物健康助手',
@@ -26,6 +24,7 @@ export default defineConfig({
         background_color: '#ffffff',
         display: 'standalone',
         start_url: '/petcare-pwa/',
+        scope: '/petcare-pwa/',
         icons: [
           {
             src: 'icon-192.png',
